@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog Post API Frontend</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .post { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Blog Posts</h1>
+  <div id="posts"></div>
+
+  <h2>Add New Post</h2>
+  <form id="postForm">
+    <input type="text" id="title" placeholder="Title" required><br><br>
+    <textarea id="content" placeholder="Content" required></textarea><br><br>
+    <input type="text" id="author" placeholder="Author"><br><br>
+    <button type="submit">Add Post</button>
+  </form>
+
+  <script>
+    const API_URL = "http://127.0.0.1:5000/posts";
+
+    // Fetch and display posts
+    async function fetchPosts() {
+      const res = await fetch(API_URL);
+      const data = await res.json();
+      const postsDiv = document.getElementById("posts");
+      postsDiv.innerHTML = "";
+      data.forEach(post => {
+        postsDiv.innerHTML += `
+          <div class="post">
+            <h3>${post.title}</h3>
+            <p>${post.content}</p>
+            <small>Author: ${post.author}</small><br>
+            <button onclick="deletePost(${post.id})">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    // Add new post
+    document.getElementById("postForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const content = document.getElementById("content").value;
+      const author = document.getElementById("author").value;
+
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, content, author })
+      });
+
+      document.getElementById("postForm").reset();
+      fetchPosts();
+    });
+
+    // Delete post
+    async function deletePost(id) {
+      await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+      fetchPosts();
+    }
+
+    // Initial load
+    fetchPosts();
+  </script>
+</body>
+</html>
